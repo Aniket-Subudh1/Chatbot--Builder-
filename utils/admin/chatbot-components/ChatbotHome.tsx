@@ -22,7 +22,6 @@ export default function ChatbotHome() {
   const handleTemplateSelect = (template:string) => {
   
     setSelectedTemplate(template)
-    setShowModal(false);
   }
   const handleThemeSelect = (template:string) => {
   
