@@ -48,7 +48,7 @@ export function Predictive() {
             <CardTitle className="text-4xl tabular-nums">
               12,584{" "}
               <span className="font-sans text-sm font-normal tracking-normal text-muted-foreground">
-                steps
+                users
               </span>
             </CardTitle>
           </CardHeader>
@@ -140,7 +140,7 @@ export function Predictive() {
                 >
                   <Label
                     position="insideBottomLeft"
-                    value="Average Steps"
+                    value="Average Users"
                     offset={10}
                     fill="hsl(var(--foreground))"
                   />
@@ -158,14 +158,13 @@ export function Predictive() {
           </CardContent>
           <CardFooter className="flex-col items-start gap-1">
             <CardDescription>
-              Over the past 7 days, you have walked{" "}
-              <span className="font-medium text-foreground">53,305</span> steps.
+              Over the past 7 days, your chatbot has interacted with{" "}
+              <span className="font-medium text-foreground">53,305</span> users.
             </CardDescription>
-            <CardDescription>
-              You need{" "}
-              <span className="font-medium text-foreground">12,584</span> more
-              steps to reach your goal.
-            </CardDescription>
+            {/* <CardDescription>
+              You need  {" "}
+              <span className="font-medium text-foreground">12,584</span> more interactions to reach this week’s engagement goal.
+            </CardDescription> */}
           </CardFooter>
         </Card>
         <Card
@@ -297,15 +296,15 @@ export function Predictive() {
           <CardHeader>
             <CardTitle>Progress</CardTitle>
             <CardDescription>
-              You're average more steps a day this year than last year.
+            You're averaging more interactions per day this year compared to last year.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid auto-rows-min gap-2">
               <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
-                12,453
+              12,453 
                 <span className="text-sm font-normal text-muted-foreground">
-                  steps/day
+                interactions/day
                 </span>
               </div>
               <ChartContainer
@@ -354,9 +353,9 @@ export function Predictive() {
             </div>
             <div className="grid auto-rows-min gap-2">
               <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
-                10,103
+              10,103 
                 <span className="text-sm font-normal text-muted-foreground">
-                  steps/day
+                interactions/day
                 </span>
               </div>
               <ChartContainer
@@ -604,29 +603,29 @@ export function Predictive() {
           <CardContent className="flex gap-4 p-4">
             <div className="grid items-center gap-2">
               <div className="grid flex-1 auto-rows-min gap-0.5">
-                <div className="text-sm text-muted-foreground">Move</div>
+                <div className="text-sm text-muted-foreground">User </div>
                 <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
                   562/600
                   <span className="text-sm font-normal text-muted-foreground">
-                    kcal
+                 id
                   </span>
                 </div>
               </div>
               <div className="grid flex-1 auto-rows-min gap-0.5">
-                <div className="text-sm text-muted-foreground">Exercise</div>
+                <div className="text-sm text-muted-foreground">Conversations</div>
                 <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
                   73/120
                   <span className="text-sm font-normal text-muted-foreground">
-                    min
+                  cm
                   </span>
                 </div>
               </div>
               <div className="grid flex-1 auto-rows-min gap-0.5">
-                <div className="text-sm text-muted-foreground">Stand</div>
+                <div className="text-sm text-muted-foreground">Active </div>
                 <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
                   8/12
                   <span className="text-sm font-normal text-muted-foreground">
-                    hr
+                  ha
                   </span>
                 </div>
               </div>
