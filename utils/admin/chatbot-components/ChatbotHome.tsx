@@ -454,7 +454,7 @@ export default function ChatbotHome() {
         </div>
           <div className="space-y-1">
             <Label htmlFor="theme">Select a Payment Provider</Label>
-            <Select id="theme">
+            <Select>
               <SelectTrigger>
                 <SelectValue placeholder="Select a Payment Provider" />
               </SelectTrigger>

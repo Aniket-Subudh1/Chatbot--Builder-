@@ -120,25 +120,11 @@ export default function CreateContent() {
           </Card>
         </div>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 bg-[#1a1a1a] text-white">
-        <p className="text-xs">&copy; 2024 Museum of Fine Arts. All rights reserved.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Terms of Service
-          </Link>
-          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Privacy
-          </Link>
-          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            Donate
-          </Link>
-        </nav>
-      </footer>
     </div>
   )
 }
 
-function AnvilIcon(props) {
+function AnvilIcon(props:any) {
   return (
     <svg
       {...props}
@@ -162,7 +148,7 @@ function AnvilIcon(props) {
 }
 
 
-function LibraryIcon(props) {
+function LibraryIcon(props:any) {
   return (
     <svg
       {...props}
@@ -185,7 +171,7 @@ function LibraryIcon(props) {
 }
 
 
-function PaintbrushIcon(props) {
+function PaintbrushIcon(props:any) {
   return (
     <svg
       {...props}
@@ -207,7 +193,7 @@ function PaintbrushIcon(props) {
 }
 
 
-function ScissorsIcon(props) {
+function ScissorsIcon(props:any) {
   return (
     <svg
       {...props}
