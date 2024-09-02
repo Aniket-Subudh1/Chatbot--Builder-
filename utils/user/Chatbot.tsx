@@ -1,17 +1,163 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState ,useEffect,useRef} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GiArtificialIntelligence } from "react-icons/gi";
 import { TbSend } from "react-icons/tb";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Toaster, toast } from "sonner";
+import { Card, CardHeader, CardContent } from "@/components/ui/card"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import Link from "next/link"
+import { AnyMxRecord } from "dns";
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [mainmenu,setMainment] = useState(false);
+  const [loading1,setLoading1] = useState(false);
+  const [openTicket,setOpenTicket] =useState(false);
+  const [form,setForm] = useState({
+    name:"",
+    email:"",
+    ticket:"",
+    date:""
+  })
 
   const toggleChatbot = () => {
+    if(chat.length==0){
+        setLoading1(true);
+    }
+    
+    setTimeout(()=>{
+        if(chat.length==0){
+            setMainment(true);
+        }
+        setLoading1(false);
+    },1000)
     setIsOpen(!isOpen);
   };
+  const [usermessage, setUserMessage] = useState("");
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [chat, setChat] = useState([
+  
+  ]);
+  const apiKey:string = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+  const genAI = new GoogleGenerativeAI(apiKey);
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+  });
+
+  const generationConfig = {
+    temperature: 1,
+    topP: 0.95,
+    topK: 64,
+    maxOutputTokens: 8192,
+    responseMimeType: "text/plain",
+  };
+
+  async function run() {
+    try {
+      setLoading(true);
+      const chatSession = model.startChat({
+        generationConfig,
+        history: history,
+      });
+      const result = await chatSession.sendMessage(usermessage);
+      setUserMessage("");
+      setLoading(false);
+
+
+      if (result.response.text().length > 0) {
+        setHistory([
+          ...history,
+          { role: "model", parts: [{ text: `${result.response.text()}\n` }] },
+        ]);
+
+        const updatedChat = [
+          ...chat,
+          { name: "You", type: "user", message: usermessage },
+          { name: "NXT-AI", type: "bot", message: result.response.text() },
+        ];
+
+        setChat(updatedChat);
+      } else {
+        toast.error("I'm sorry, I didn't understand that. Please try again!");
+      }
+    } catch (err) {
+      toast.error("Too many requests, please try again later!" + err);
+      console.log(err);
+    }
+  }
+  type InputEvent = React.ChangeEvent<HTMLInputElement>
+
+  const handleChange = (e:InputEvent) => {
+    setUserMessage(e.target.value);
+  };
+//start chat with ai 
+const StartChat = ()=>{
+    setLoading1(true);
+    setMainment(false);
+    setOpenTicket(false);
+    setTimeout(()=>{
+        setLoading1(false);
+        setChat([...chat,   {
+            name: "radsb",
+            type: "bot",
+            message:
+              "Hello! I'm a ChatBot created by Radsab. How can I help you today?",
+          },])
+    },1000)
+   
+
+}
+  const handleSubmit = (e:any) => {
+    e.preventDefault();
+    if (usermessage.trim() === "") return;
+    if(usermessage.toLowerCase()=="menu"){
+        setMainment(true);
+        setChat([{}]);
+        setUserMessage("");
+        return;
+    }
+    setHistory([...history, { role: "user", parts: [{ text: `${usermessage}\n` }] }]);
+    setChat([...chat, { name: "You", type: "user", message: usermessage }])
+    console.log(chat)
+    run();
+    // setUserMessage("");
+    console.log(usermessage);
+    toast.success(usermessage);
+  };
+
+//   const chatEndRef = useRef(null);
+//   useEffect(() => {
+//     scrollToBottom();
+//   }, [chat]);
+
+//   const scrollToBottom = () => {
+//     if (chatEndRef.current) {
+//       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+//     }
+//   };
+// ;
+const BookTicket=()=>{
+setMainment(false);
+setLoading1(true);
+setTimeout(()=>{
+    setOpenTicket(true);
+    setLoading1(false);
+},1000)
+
+}
 
   return (
     <div>
+        <Toaster position="top-center"/>
       {/* Button to open/close chatbot */}
       <button
         className="fixed bottom-4 right-4 inline-flex items-center justify-center text-sm font-medium disabled:pointer-events-none disabled:opacity-50 border rounded-full w-16 h-16 bg-black hover:bg-gray-700 m-0 cursor-pointer border-gray-200 bg-none p-0 normal-case leading-5 hover:text-gray-900"
@@ -45,10 +191,10 @@ const Chatbot = () => {
           <motion.div
             initial={{ opacity: 0, y: 100 }} // Start position
             animate={{ opacity: 1, y: 0 }} // End position
-            exit={{ opacity: 0, y: 100 }} // Exit position
-            transition={{ duration: 0.5 }} // Animation duration
+            exit={{ opacity: 0, y: 800 }} // Exit position
+            transition={{ duration: 0.5}} // Animation duration
             style={{ boxShadow: "0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0 0 0 / 0.05)" }}
-            className="fixed bottom-[calc(4rem+1.5rem)] right-0 mr-4 bg-white p-6 rounded-lg border border-[#e5e7eb] w-full sm:w-[440px] max-h-[80vh] overflow-hidden"
+            className="fixed bottom-[calc(4rem+1.5rem)] right-0 mr-4 bg-white p-6 rounded-lg border border-[#e5e7eb] w-full sm:w-[440px] lg:max-h-[83vh]  md:max-h-[83vh] max-h-[80vh] overflow-hidden"
           >
             {/* Heading */}
             <div className="flex flex-col space-y-1.5 pb-6">
@@ -57,9 +203,151 @@ const Chatbot = () => {
             </div>
 
             {/* Chat Container */}
-            <div className="overflow-y-auto pr-4 h-[474px]">
+            <div className="overflow-y-auto pr-4 lg:h-[474px] md:h-[474px] h-[380px]"  >
+         {   mainmenu&& <Card className="">
+      <CardHeader className="flex flex-col items-center gap-4 bg-muted/50 px-6 py-8">
+        <Avatar className="h-16 w-16">
+          <AvatarImage src="/placeholder-user.jpg" alt="Museum Avatar" />
+          <AvatarFallback>MAI</AvatarFallback>
+        </Avatar>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">Welcome to the Museum</h2>
+          <p className="text-muted-foreground">How can we assist you today?</p>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-4 p-6">
+        <Link
+          href="#"
+          className="flex items-center gap-4 rounded-md bg-background p-4 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+          prefetch={false}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <CompassIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-medium">Explore the Museum</p>
+            <p className="text-sm text-muted-foreground">Discover our exhibits and collections.</p>
+          </div>
+        </Link>
+        <Link
+          href="#"
+          className="flex items-center gap-4 rounded-md bg-background p-4 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+          prefetch={false}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <CalendarIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-medium">View Exhibitions</p>
+            <p className="text-sm text-muted-foreground">Check out our current and upcoming exhibitions.</p>
+          </div>
+        </Link>
+        <Link
+        onClick={BookTicket}
+          href="#"
+          className="flex items-center gap-4 rounded-md bg-background p-4 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+          prefetch={false}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <TicketIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-medium">Book Tickets</p>
+            <p className="text-sm text-muted-foreground">Purchase tickets for your visit.</p>
+          </div>
+        </Link>
+        <Link
+          onClick={StartChat}
+          href={"#"}
+          className="flex items-center gap-4 rounded-md bg-background p-4 transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
+          prefetch={false}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <InfoIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-medium">Get Information</p>
+            <p className="text-sm text-muted-foreground">Find answers to your questions.</p>
+          </div>
+        </Link>
+      </CardContent>
+    </Card>}
+
+    {loading1&&<>
+                    <div className="w-full max-w-md mx-auto animate-pulse p-9">
+    <h1 className="h-2 bg-gray-300 rounded-lg w-52 dark:bg-gray-600"></h1>
+
+    <p className="w-48 h-2 mt-6 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+    <p className="w-full h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+    <p className="w-64 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+    <p className="w-4/5 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+</div>
+                  </>}
+                  {
+                 openTicket&& (<div className="max-w-md mx-auto p-6 sm:p-8 md:p-10">
+                 <div className="flex flex-col items-center gap-4 mb-8">
+                   <h1 className="text-3xl font-bold">Book Your Museum Visit</h1>
+                   <p className="text-muted-foreground">Reserve your tickets for an unforgettable experience.</p>
+                 </div>
+                 <form className="space-y-4">
+                   <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label htmlFor="name">Name</Label>
+                       <Input id="name" placeholder="Enter your name" />
+                     </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="email">Email</Label>
+                       <Input id="email" type="email" placeholder="Enter your email" />
+                     </div>
+                   </div>
+                   <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label htmlFor="date">Date of Visit</Label>
+                       <Popover>
+                         <PopoverTrigger asChild>
+                           <Button variant="outline" className="w-full justify-start text-left font-normal">
+                             <CalendarDaysIcon className="mr-1 h-4 w-4 -translate-x-1" />
+                             <span>Select a date</span>
+                           </Button>
+                         </PopoverTrigger>
+                         <PopoverContent className="p-0">
+                           <Calendar mode="single" initialFocus />
+                         </PopoverContent>
+                       </Popover>
+                     </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="tickets">Number of Tickets</Label>
+                       <Select id="tickets">
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select number" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="1">1</SelectItem>
+                           <SelectItem value="2">2</SelectItem>
+                           <SelectItem value="3">3</SelectItem>
+                           <SelectItem value="4">4</SelectItem>
+                           <SelectItem value="5">5</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+                   <Button type="submit" className="w-full">
+                     Book Tickets
+                   </Button>
+                 </form>
+                 <div className="mt-8 text-center">
+                   <p className="text-muted-foreground">Or, chat with our virtual assistant to book your tickets:</p>
+                   <Button variant="outline" className="mt-2 flex items-center gap-2 text-muted-foreground hover:text-primary" onClick={StartChat}>
+                     <MessageCircleDashedIcon className="h-5 w-5" />
+                     <span>Chat with us</span>
+                   </Button>
+                 </div>
+               </div>)
+             }
+       { chat.map((item,index)=>(    <div  key={index}>
               {/* Chat Message AI */}
-              <div className="flex gap-3 my-4 text-gray-600 text-sm flex-1">
+             
+             { item.type=="bot" &&(<div className="flex gap-3 my-4 text-gray-600 text-sm flex-1">
                 <span className="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
                   <div className="rounded-full bg-gray-100 border p-1">
                     <svg
@@ -81,12 +369,14 @@ const Chatbot = () => {
                   </div>
                 </span>
                 <p className="leading-relaxed">
-                  <span className="block font-bold text-gray-700">AI </span>Hi, how can I help you today?
+                  <span className="block font-bold text-gray-700">AI </span>{item.message.replace(/\*/g, '')}
                 </p>
-              </div>
+               
+              </div>)}
+            
 
               {/* User Chat Message */}
-              <div className="flex gap-3 my-4 text-gray-600 text-sm flex-1">
+             { item.type=="user"&&(<div className="flex gap-3 my-4 text-gray-600 text-sm flex-1">
                 <span className="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
                   <div className="rounded-full bg-gray-100 border p-1">
                     <svg
@@ -103,40 +393,29 @@ const Chatbot = () => {
                   </div>
                 </span>
                 <p className="leading-relaxed">
-                  <span className="block font-bold text-gray-700">You </span>fewafef
+                  <span className="block font-bold text-gray-700">You </span>{item.message}
                 </p>
-              </div>
-
-              {/* AI Chat Message */}
-              <div className="flex gap-3 my-4 text-gray-600 text-sm flex-1">
-                <span className="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
-                  <div className="rounded-full bg-gray-100 border p-1">
-                    <svg
-                      stroke="none"
-                      fill="black"
-                      strokeWidth="1.5"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                      height={20}
-                      width={20}
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
-                      ></path>
-                    </svg>
-                  </div>
-                </span>
-                <p className="leading-relaxed">
-                  <span className="block font-bold text-gray-700">AI </span>fweafewf
-                </p>
-              </div>
+              </div>)}
+              
+              
+           
             </div>
+          
+))}
+{loading&&<>
+                    <div className="w-full max-w-md mx-auto animate-pulse p-9">
+    <h1 className="h-2 bg-gray-300 rounded-lg w-52 dark:bg-gray-600"></h1>
 
+    <p className="w-48 h-2 mt-6 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+    <p className="w-full h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+    <p className="w-64 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+    <p className="w-4/5 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700"></p>
+</div>
+                  </>}
+   
+</div>
             {/* Input Field for User Message */}
-            <div className="flex absolute bottom-2 w-full">
+            <div className="flex relative bottom-2 w-full">
           
   <div className="w-full">
     <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -145,15 +424,17 @@ const Chatbot = () => {
     <input
       type="text"
       id="voice-search"
-      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-96 ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      onChange={handleChange}
+      value={usermessage}
+      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
       placeholder="Enter Your Query ? "
-      
+      onKeyPress={(e) => e.key === "Enter" && handleSubmit(e)}
     />
 
   </div>
   <button
-    type="submit"
-    className="flex py-2.5 px-3 ms-2 text-sm font-medium text-white  border focus:ring-4 focus:outline-none focus:ring-blue-300 absolute lg:right-14 md:right-14 right-6 justify-center items-center "
+    onClick={handleSubmit}
+    className="flex py-2.5 px-3 ms-2 text-sm font-medium text-white  border focus:ring-4 focus:outline-none focus:ring-blue-300 absolute right-0 justify-center items-center bg-white"
   >
      <TbSend className="w-5 h-5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"/>
     
@@ -169,3 +450,142 @@ const Chatbot = () => {
 };
 
 export default Chatbot;
+function CalendarIcon(props:any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M8 2v4" />
+        <path d="M16 2v4" />
+        <rect width="18" height="18" x="3" y="4" rx="2" />
+        <path d="M3 10h18" />
+      </svg>
+    )
+  }
+  
+  
+  function CompassIcon(props:any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" />
+        <circle cx="12" cy="12" r="10" />
+      </svg>
+    )
+  }
+  
+  
+  function InfoIcon(props:any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+    )
+  }
+  
+  
+  function TicketIcon(props:any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+        <path d="M13 5v2" />
+        <path d="M13 17v2" />
+        <path d="M13 11v2" />
+      </svg>
+    )
+  }
+  function MessageCircleDashedIcon(props:any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M13.5 3.1c-.5 0-1-.1-1.5-.1s-1 .1-1.5.1" />
+        <path d="M19.3 6.8a10.45 10.45 0 0 0-2.1-2.1" />
+        <path d="M20.9 13.5c.1-.5.1-1 .1-1.5s-.1-1-.1-1.5" />
+        <path d="M17.2 19.3a10.45 10.45 0 0 0 2.1-2.1" />
+        <path d="M10.5 20.9c.5.1 1 .1 1.5.1s1-.1 1.5-.1" />
+        <path d="M3.5 17.5 2 22l4.5-1.5" />
+        <path d="M3.1 10.5c0 .5-.1 1-.1 1.5s.1 1 .1 1.5" />
+        <path d="M6.8 4.7a10.45 10.45 0 0 0-2.1 2.1" />
+      </svg>
+    )
+  }
+  function CalendarDaysIcon(props:any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M8 2v4" />
+        <path d="M16 2v4" />
+        <rect width="18" height="18" x="3" y="4" rx="2" />
+        <path d="M3 10h18" />
+        <path d="M8 14h.01" />
+        <path d="M12 14h.01" />
+        <path d="M16 14h.01" />
+        <path d="M8 18h.01" />
+        <path d="M12 18h.01" />
+        <path d="M16 18h.01" />
+      </svg>
+    )
+  }

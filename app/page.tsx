@@ -5,7 +5,7 @@ const page = () => {
   return (
     <div>
       <Hero/>
-      <div className='absolute bottom-0 right-0'>
+      <div className='absolute bottom-0 right-0 '>
         <Chatbot/>
       </div>
     </div>
