@@ -2,7 +2,7 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const POST = async (req) => {
+export const POST = async (req:NextRequest) => {
   try {
     // Attempt to parse the incoming request body as JSON
     const contentType = req.headers.get('content-type') || '';
