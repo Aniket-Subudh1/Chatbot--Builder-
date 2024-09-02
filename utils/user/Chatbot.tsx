@@ -87,10 +87,6 @@ const Chatbot = () => {
 
       if (result.response.text().length > 0) {
         //@ts-ignore
-        setHistory([
-          ...history,
-          { role: "model", parts: [{ text: `${result.response.text()}\n` }] },
-        ]);
 
         const updatedChat = [
           ...chat,
