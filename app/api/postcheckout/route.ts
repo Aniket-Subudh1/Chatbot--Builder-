@@ -32,7 +32,7 @@ export const POST = async (req:NextRequest) => {
     } else {
       return NextResponse.json({ success: false }, { status: 400 });
     }
-  } catch (error) {
+  } catch (error:any) {
     console.error('Error processing request:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 400 });
   }
