@@ -15,17 +15,25 @@ import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import Link from "next/link"
 import { AnyMxRecord } from "dns";
+import { set } from "date-fns";
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [mainmenu,setMainment] = useState(false);
   const [loading1,setLoading1] = useState(false);
   const [openTicket,setOpenTicket] =useState(false);
-  const [form,setForm] = useState({
-    name:"",
-    email:"",
-    ticket:"",
-    date:""
-  })
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [date, setDate] = useState("");
+  const [tickets, setTickets] = useState("");
+  const [openConfirmation,setOpenConfirmation] = useState(false);
+
+  const handleNameChange = (e) => setName(e.target.value);
+  const handleEmailChange = (e) => setEmail(e.target.value);
+  const handleDateChange = (selectedDate) => {
+    setDate(selectedDate);
+  };
+  const handleTicketsChange = (value) => setTickets(value);
+
 
   const toggleChatbot = () => {
     if(chat.length==0){
@@ -152,6 +160,21 @@ setTimeout(()=>{
     setOpenTicket(true);
     setLoading1(false);
 },1000)
+
+}
+//ticket book logic here
+const handleTicketBook=(e:any)=>{
+  e.preventDefault();
+  const formData = { name, email, date, tickets };
+  console.log("Form Data Submitted: ", formData);
+ setLoading(true);
+ setOpenTicket(false);
+ setTimeout(()=>{
+setOpenConfirmation(true);
+ },500)
+}
+
+const Payment = ()=>{
 
 }
 
@@ -284,65 +307,117 @@ setTimeout(()=>{
 </div>
                   </>}
                   {
-                 openTicket&& (<div className="max-w-md mx-auto p-6 sm:p-8 md:p-10">
-                 <div className="flex flex-col items-center gap-4 mb-8">
-                   <h1 className="text-3xl font-bold">Book Your Museum Visit</h1>
-                   <p className="text-muted-foreground">Reserve your tickets for an unforgettable experience.</p>
-                 </div>
-                 <form className="space-y-4">
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label htmlFor="name">Name</Label>
-                       <Input id="name" placeholder="Enter your name" />
-                     </div>
-                     <div className="space-y-2">
-                       <Label htmlFor="email">Email</Label>
-                       <Input id="email" type="email" placeholder="Enter your email" />
-                     </div>
-                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label htmlFor="date">Date of Visit</Label>
-                       <Popover>
-                         <PopoverTrigger asChild>
-                           <Button variant="outline" className="w-full justify-start text-left font-normal">
-                             <CalendarDaysIcon className="mr-1 h-4 w-4 -translate-x-1" />
-                             <span>Select a date</span>
-                           </Button>
-                         </PopoverTrigger>
-                         <PopoverContent className="p-0">
-                           <Calendar mode="single" initialFocus />
-                         </PopoverContent>
-                       </Popover>
-                     </div>
-                     <div className="space-y-2">
-                       <Label htmlFor="tickets">Number of Tickets</Label>
-                       <Select id="tickets">
-                         <SelectTrigger>
-                           <SelectValue placeholder="Select number" />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="1">1</SelectItem>
-                           <SelectItem value="2">2</SelectItem>
-                           <SelectItem value="3">3</SelectItem>
-                           <SelectItem value="4">4</SelectItem>
-                           <SelectItem value="5">5</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   </div>
-                   <Button type="submit" className="w-full">
-                     Book Tickets
-                   </Button>
-                 </form>
-                 <div className="mt-8 text-center">
-                   <p className="text-muted-foreground">Or, chat with our virtual assistant to book your tickets:</p>
-                   <Button variant="outline" className="mt-2 flex items-center gap-2 text-muted-foreground hover:text-primary" onClick={StartChat}>
-                     <MessageCircleDashedIcon className="h-5 w-5" />
-                     <span>Chat with us</span>
-                   </Button>
-                 </div>
-               </div>)
+                 openTicket&& ( <div className="max-w-md mx-auto p-6 sm:p-8 md:p-10">
+                  <div className="flex flex-col items-center gap-4 mb-8">
+                    <h1 className="text-3xl font-bold">Book Your Museum Visit</h1>
+                    <p className="text-muted-foreground">Reserve your tickets for an unforgettable experience.</p>
+                  </div>
+                  <form className="space-y-4" onSubmit={handleTicketBook}>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" placeholder="Enter your name" value={name} onChange={handleNameChange} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={handleEmailChange} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="date">Date of Visit</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start text-left font-normal">
+                              <CalendarDaysIcon className="mr-1 h-4 w-4 -translate-x-1" />
+                              <span>{date ? date.toLocaleDateString() : "Select a date"}</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-0">
+                            <Calendar mode="single" selected={date} onSelect={handleDateChange} initialFocus />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tickets">Number of Tickets</Label>
+                        <Select id="tickets" value={tickets} onValueChange={handleTicketsChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select number" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1</SelectItem>
+                            <SelectItem value="2">2</SelectItem>
+                            <SelectItem value="3">3</SelectItem>
+                            <SelectItem value="4">4</SelectItem>
+                            <SelectItem value="5">5</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full">
+                      Book Tickets
+                    </Button>
+                  </form>
+                  <div className="mt-8 text-center">
+                    <p className="text-muted-foreground">Or, chat with our virtual assistant to book your tickets:</p>
+                    <Button variant="outline" className="mt-2 flex items-center gap-2 text-muted-foreground hover:text-primary" onClick={StartChat}>
+                      <MessageCircleDashedIcon className="h-5 w-5" />
+                      <span>Chat with us</span>
+                    </Button>
+                  </div>
+                </div>)
+             }
+             {/* booking confirmation page */}
+             {openConfirmation&&<div className="max-w-md mx-auto p-6 sm:p-8 md:p-10">
+              <div className="flex flex-col items-center gap-4 mb-8">
+                <h1 className="text-3xl font-bold">Confirm Your Booking</h1>
+                <p className="text-muted-foreground">Review your booking details and complete your payment.</p>
+              </div>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <div className="font-medium">{name&&name}</div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="font-medium">{email&&email}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Date of Visit</Label>
+                    <div className="font-medium">{date&&date[0]}</div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tickets">Number of Tickets</Label>
+                    <div className="font-medium">{tickets&&tickets}</div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="text-muted-foreground">Total</div>
+                  <div className="font-medium text-2xl">$40.00</div>
+                </div>
+                <Button type="submit" className="w-full">
+                  Complete Payment
+                </Button>
+              </div>
+              <div className="mt-8 text-center">
+                <p className="text-muted-foreground">Or, chat with our virtual assistant to complete your booking:</p>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <Button variant="outline" className="flex items-center gap-2 text-muted-foreground hover:text-primary" onClick={StartChat}>
+                    <MessageCircleDashedIcon className="h-5 w-5" />
+                    <span>Chat with us</span>
+                  </Button>
+                  <div className="relative">
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+                      1
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
              }
        { chat.map((item,index)=>(    <div  key={index}>
               {/* Chat Message AI */}
