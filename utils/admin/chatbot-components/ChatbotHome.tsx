@@ -90,6 +90,7 @@ export default function ChatbotHome() {
   return (
     <div className="w-full max-w-6xl mx-auto py-12 px-4 md:px-6">
       <div className="grid gap-12">
+    
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">Your Chatbots</h2>
