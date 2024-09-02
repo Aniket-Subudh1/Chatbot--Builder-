@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-sync-scripts */
 import React, { useState ,useEffect,useRef} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GiArtificialIntelligence } from "react-icons/gi";
@@ -26,12 +27,15 @@ const Chatbot = () => {
   const [date, setDate] = useState("");
   const [tickets, setTickets] = useState("");
   const [openConfirmation,setOpenConfirmation] = useState(false);
-
+//@ts-ignore
   const handleNameChange = (e) => setName(e.target.value);
+  //@ts-ignore
   const handleEmailChange = (e) => setEmail(e.target.value);
+  //@ts-ignore
   const handleDateChange = (selectedDate) => {
     setDate(selectedDate);
   };
+  //@ts-ignore
   const handleTicketsChange = (value) => setTickets(value);
 
 
@@ -82,6 +86,7 @@ const Chatbot = () => {
 
 
       if (result.response.text().length > 0) {
+        //@ts-ignore
         setHistory([
           ...history,
           { role: "model", parts: [{ text: `${result.response.text()}\n` }] },
@@ -92,7 +97,7 @@ const Chatbot = () => {
           { name: "You", type: "user", message: usermessage },
           { name: "NXT-AI", type: "bot", message: result.response.text() },
         ];
-
+//@ts-ignore
         setChat(updatedChat);
       } else {
         toast.error("I'm sorry, I didn't understand that. Please try again!");
@@ -114,6 +119,7 @@ const StartChat = ()=>{
     setOpenTicket(false);
     setTimeout(()=>{
         setLoading1(false);
+        //@ts-ignore
         setChat([...chat,   {
             name: "radsb",
             type: "bot",
@@ -129,11 +135,14 @@ const StartChat = ()=>{
     if (usermessage.trim() === "") return;
     if(usermessage.toLowerCase()=="menu"){
         setMainment(true);
+        //@ts-ignore
         setChat([{}]);
         setUserMessage("");
         return;
     }
+    //@ts-ignore
     setHistory([...history, { role: "user", parts: [{ text: `${usermessage}\n` }] }]);
+    //@ts-ignore
     setChat([...chat, { name: "You", type: "user", message: usermessage }])
     console.log(chat)
     run();
@@ -167,15 +176,66 @@ const handleTicketBook=(e:any)=>{
   e.preventDefault();
   const formData = { name, email, date, tickets };
   console.log("Form Data Submitted: ", formData);
+  if(name==""||email==""||date==null||tickets==""){
+ toast.error("Please enter all the details correctly .")
+ return;
+  }
  setLoading(true);
  setOpenTicket(false);
  setTimeout(()=>{
 setOpenConfirmation(true);
+setLoading(false);
  },500)
 }
 
-const Payment = ()=>{
+const PaymentDo = async(e:any)=>{
+  setLoading(true);
+  let amount = 99;
+  const data = { amount,email,name};
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_HOST}/api/precheckout`,
+    {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
 
+  const r = await response.json();
+  setLoading(false);
+  if(r.success){
+  var options =  {
+    key: `${process.env.NEXT_PUBLIC_KEY_ID}`,
+     // Enter the Key ID generated from the Dashboard
+    amount: r.order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    currency: "INR",
+    name: `RadSab TicketBooking For Museum`, //your business name
+    description: `RadSab ticket booking for museum book your ticket now ."`,
+    image: "/logo.png",
+    order_id: r.order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    callback_url: `${process.env.NEXT_PUBLIC_HOST}/api/postcheckout`,
+    prefill: {
+      //We recommend using the prefill parameter to auto-fill customer's contact information especially their phone number
+      name: name, //your customer's name
+      email: email,
+    },
+    notes: {
+      address: "Razorpay Corporate Office",
+    },
+    theme: {
+      color: "#FD0872",
+    },
+  };
+  //@ts-ignore
+  var rzp1 = new window.Razorpay(options);
+  await rzp1.open();
+  e.preventDefault();
+}
+else{
+    toast.error('Error in Payment');
+}
 }
 
   return (
@@ -334,13 +394,14 @@ const Payment = ()=>{
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="p-0">
+                         
                             <Calendar mode="single" selected={date} onSelect={handleDateChange} initialFocus />
                           </PopoverContent>
                         </Popover>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="tickets">Number of Tickets</Label>
-                        <Select id="tickets" value={tickets} onValueChange={handleTicketsChange}>
+                        <Select value={tickets} onValueChange={handleTicketsChange}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select number" />
                           </SelectTrigger>
@@ -387,7 +448,7 @@ const Payment = ()=>{
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="date">Date of Visit</Label>
-                    <div className="font-medium">{date&&date[0]}</div>
+                    <div className="font-medium">{date&&date.toLocaleDateString()}</div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="tickets">Number of Tickets</Label>
@@ -397,9 +458,9 @@ const Payment = ()=>{
                 
                 <div className="flex justify-between items-center">
                   <div className="text-muted-foreground">Total</div>
-                  <div className="font-medium text-2xl">$40.00</div>
+                  <div className="font-medium text-2xl">₹99.00</div>
                 </div>
-                <Button type="submit" className="w-full">
+                <Button onClick={PaymentDo} className="w-full" disabled={loading}>
                   Complete Payment
                 </Button>
               </div>
@@ -410,11 +471,6 @@ const Payment = ()=>{
                     <MessageCircleDashedIcon className="h-5 w-5" />
                     <span>Chat with us</span>
                   </Button>
-                  <div className="relative">
-                    <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-                      1
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -520,6 +576,7 @@ const Payment = ()=>{
           </motion.div>
         )}
       </AnimatePresence>
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     </div>
   );
 };

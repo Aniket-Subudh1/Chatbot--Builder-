@@ -7,6 +7,7 @@ const page = () => {
       <Hero/>
       <div className='absolute bottom-0 right-0 '>
         <Chatbot/>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </div>
     </div>
   )
