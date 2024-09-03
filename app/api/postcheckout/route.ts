@@ -28,7 +28,7 @@ export const POST = async (req:NextRequest) => {
     const generated_signature = hmac.digest('hex');
         
     if (razorpay_signature === generated_signature) {
-      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_HOST}?id=${razorpay_order_id}?payment_id=${razorpay_payment_id}`, 302);
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_HOST}/confirm?id=${razorpay_order_id}?payment_id=${razorpay_payment_id}`, 302);
     } else {
       return NextResponse.json({ success: false }, { status: 400 });
     }
